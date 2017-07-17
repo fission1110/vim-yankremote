@@ -1,0 +1,6 @@
+# Please keep your private keys off of github :|
+server.cert
+server.key
+client.cert
+client.key
+client.csr
