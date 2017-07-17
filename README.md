@@ -39,12 +39,15 @@ let g:PasteSendClientKey = '/path/to/client.key' " The full path of the client k
 This plugin creates the PasteSend command.
 
 ---
+
 Send your selection with
 ``` :'<,'>PasteSend ```
 
 or send the entire file with
 ``` :%PasteSend ```
+
 ---
+
 See ```:help range```
 
 ## Security Considerations
