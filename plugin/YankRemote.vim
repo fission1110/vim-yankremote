@@ -16,8 +16,15 @@ def PySendClipboard(line1,line2):
 	clientCert = vim.eval('g:PasteSendClientCert')
 	clientKey = vim.eval('g:PasteSendClientKey')
 
-	# Get the data from the current buffer range
-	data = "\n".join(vim.current.buffer.range(int(line1), int(line2))[:])
+	# Backup the contents of n register
+	vim.command('let n = @n')
+
+	# yank selection into n
+	vim.command('silent! normal gv"ny')
+	data = vim.eval('@n')
+
+	# restore n register
+	vim.command('let @n = n')
 
 	# Set the + register to the contents of the yanked text
 	senclose = lambda str: "'"+str.replace("'", "''")+"'"

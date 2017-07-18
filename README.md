@@ -28,12 +28,12 @@ This utilizes tls client certificates for authentication so people on your lan c
 
 ## In your .vimrc
 ```
-let g:PasteSendIP = '' " The IP where server.py is running
+let g:PasteSendIP = '127.0.0.1' " The IP where server.py is running
 let g:PasteSendPort = 9999 " The port server.py is running on
 let g:PasteSendCert = '/path/to/server.cert' " The full path of the certificate file
 let g:PasteSendClientCert = '/path/to/client.cert' " The full path of the client certificate file
 let g:PasteSendClientKey = '/path/to/client.key' " The full path of the client key file
-" vmap y :PasteSend<cr> " Optionally you can overwrite visual yank
+vmap <leader>y :PasteSend<cr> " Optionally you can overwrite visual yank
 ```
 ## Usage
 This plugin creates the PasteSend command.
