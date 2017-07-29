@@ -2,11 +2,24 @@
 from SocketServer import TCPServer, ThreadingMixIn, StreamRequestHandler
 import subprocess
 import ssl
+from distutils import spawn
 
 ip = '0.0.0.0'
 port = 9999
 cert = './server.cert'
 privKey = './server.key'
+
+possibleCommands = [
+	('xclip', ['xclip', '-i', '-sel', 'c']),
+	('clip', ['clip']),
+	('xsel', ['xsel', '--clipboard', '--input']),
+	('pbcopy', ['pbcopy'])
+]
+
+for possibleCommand,arguments in possibleCommands:
+	if spawn.find_executable(possibleCommand) != None:
+		command = arguments
+		break
 
 class MySSL_TCPServer(TCPServer):
     def __init__(self,
@@ -34,10 +47,9 @@ class MySSL_TCPServer(TCPServer):
 
 class MySSL_ThreadingTCPServer(ThreadingMixIn, MySSL_TCPServer): pass
 
-class testHandler(StreamRequestHandler):
+class tcpHandler(StreamRequestHandler):
 
     def handle(self):
-        # TODO: loop till you get all data
         data = ''
         blockSize = 4096
         while True:
@@ -48,7 +60,7 @@ class testHandler(StreamRequestHandler):
         self.sendToClipboard(data)
 
     def sendToClipboard(self, data):
-        process = subprocess.Popen(['/usr/bin/xclip', '-i', '-sel', 'c'], stdin=subprocess.PIPE)
+        process = subprocess.Popen(command, stdin=subprocess.PIPE)
         process.communicate(input=data)
 
-MySSL_ThreadingTCPServer((ip,port),testHandler,cert,privKey).serve_forever()
+MySSL_ThreadingTCPServer((ip,port),tcpHandler,cert,privKey).serve_forever()

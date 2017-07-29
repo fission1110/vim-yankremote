@@ -1,47 +1,40 @@
-if !has('python')
-    " exit if python is not available.
-    " XXX: raise an error message here
-    finish
+if !has('python') && !has('python3')
+	finish
 endif
 
-python << EOL
-import os
-import socket, ssl
-import vim
-def PySendClipboard(line1,line2):
-	# Get configuration from global vars
-	ip = vim.eval('g:PasteSendIP')
-	port = int(vim.eval('g:PasteSendPort'))
-	cert = vim.eval('g:PasteSendCert')
-	clientCert = vim.eval('g:PasteSendClientCert')
-	clientKey = vim.eval('g:PasteSendClientKey')
+let s:scriptPath = expand('<sfile>:h') . '/../bin/'
+let s:clientFile = 'client.py'
 
-	# Backup the contents of n register
-	vim.command('let n = @n')
+if !exists('g:PasteSendIP')
+	let g:PasteSendIP = '127.0.0.1'
+endif
 
-	# yank selection into n
-	vim.command('silent! normal gv"ny')
-	data = vim.eval('@n')
+if !exists('g:PasteSendPort')
+	let g:PasteSendPort = '9999'
+endif
 
-	# restore n register
-	vim.command('let @n = n')
+if !exists('g:PasteSendCert')
+	let g:PasteSendCert = s:scriptPath . 'server.cert'
+endif
 
-	# Set the + register to the contents of the yanked text
-	senclose = lambda str: "'"+str.replace("'", "''")+"'"
-	vim.eval("setreg('@+', %s)" % (senclose(data)))
+if !exists('g:PasteSendClientCert')
+	let g:PasteSendClientCert = s:scriptPath . 'client.cert'
+endif
 
-	# connect using ssl to the server
-	s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-	ssl_sock = ssl.wrap_socket(s,
-							   ca_certs=cert,
-							   certfile=clientCert,
-							   keyfile=clientKey,
-							   cert_reqs=ssl.CERT_REQUIRED,
-							   ssl_version=ssl.PROTOCOL_TLSv1)
+if !exists('g:PasteSendClientKey')
+	let g:PasteSendClientKey = s:scriptPath . 'client.key'
+endif
 
-	ssl_sock.connect((ip,port))
-	ssl_sock.send(data)
-	ssl_sock.close()
-EOL
+if has('python') && !has('python3')
+	let s:pyPrefix = 'py'
+	command -range PasteSend python PySendClipboard(<f-line1>,<f-line2>)
+endif
 
-command -range PasteSend python PySendClipboard(<f-line1>,<f-line2>)
+if !has('python') && has('python3')
+	let s:pyPrefix = 'py3'
+	command -range PasteSend python3 PySendClipboard(<f-line1>,<f-line2>)
+endif
+
+exec s:pyPrefix . 'file ' . s:scriptPath . s:clientFile
+
+

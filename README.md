@@ -9,11 +9,9 @@ This doesn't work when you don't have X, and it seems silly to install X just fo
 My solution uses a tls socket to send the clipboard back to my local server, then uses xclip to shove that into my local system clipboard.
 This utilizes tls client certificates for authentication so people on your lan can't just overwrite your clipboard with arbitrary data. Yay security.
 
-##### I didn't bother to learn how program in viml before making this, so use at your own risk! #####
-
 ## requires ##
-* requires +python support for vim on the remote server
-* xclip
+* requires +python or +python3 support for vim on the remote server
+* xclip (*untested* xsel(linux), pbcopy(mac), or clip(windows))
 * openssl
 
 ## setup ##
@@ -26,13 +24,18 @@ This utilizes tls client certificates for authentication so people on your lan c
 5. Configure your .vimrc to point back to your local host, with the full path of the cert
 6. Start Yanking over tls!
 
+## alternate setup ##
+You could set up ssh port forwarding to push your local port 9999 to your remote server..
+Then on the remote server, you could just connect to localhost:9999 and not have
+to worry about firewalls.
+
 ## In your .vimrc
 ```
-let g:PasteSendIP = '127.0.0.1' " The IP where server.py is running
-let g:PasteSendPort = 9999 " The port server.py is running on
-let g:PasteSendCert = '/path/to/server.cert' " The full path of the certificate file
-let g:PasteSendClientCert = '/path/to/client.cert' " The full path of the client certificate file
-let g:PasteSendClientKey = '/path/to/client.key' " The full path of the client key file
+let g:PasteSendIP = '127.0.0.1' " The IP where server.py is running. Defaults to 127.0.0.1
+let g:PasteSendPort = 9999 " The port server.py is running on. Defaults to 9999
+let g:PasteSendCert = '/path/to/server.cert' " The full path of the certificate file. Defaults to <plugindir>/bin/server.cert
+let g:PasteSendClientCert = '/path/to/client.cert' " The full path of the client certificate file. Defaults to <plugindir>/bin/client.cert
+let g:PasteSendClientKey = '/path/to/client.key' " The full path of the client key file. Defaults to <plugindir>/bin/client.key
 vmap <leader>y :PasteSend<cr> " Optionally you can overwrite visual yank
 ```
 ## Usage
