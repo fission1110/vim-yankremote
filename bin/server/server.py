@@ -1,43 +1,55 @@
-#!/usr/bin/env python
-from SocketServer import TCPServer, ThreadingMixIn, StreamRequestHandler
+#!/usr/bin/env python3
 import subprocess
-import sys
+import sys, os
 import ssl
+import signal
 from distutils import spawn
 try:
-	import configparser
+    from SocketServer import TCPServer, ThreadingMixIn, StreamRequestHandler
 except Exception as e:
-	import ConfigParser as configparser
+    from socketserver import TCPServer, ThreadingMixIn, StreamRequestHandler
+try:
+    import configparser
+except Exception as e:
+    import ConfigParser as configparser
 
-configFile = './server.conf'
+#TODO: Make this a self watching daemon
+dirPath = os.path.dirname(os.path.realpath(__file__))
+configFile = dirPath + '/server.conf'
 
 config = configparser.RawConfigParser()
 config.read(configFile)
 
+# TODO: make the binary configurable.
 ip = config.get('server', 'listen_ip')
 port = config.getint('server', 'listen_port')
-cert = config.get('server', 'server_cert')
-privKey = config.get('server', 'server_key')
 
+# Paths are relative to the directory of the config file
+confPath = os.path.dirname(configFile) + '/'
+cert = confPath + config.get('server', 'server_cert')
+privKey = confPath + config.get('server', 'server_key')
+
+# TODO: Only xclip is tested
+# TODO: would be nice if this tied directly into xlib and the windows API.
 possibleCommands = [
-	('xclip', ['xclip', '-i', '-sel', 'c']),
-	('clip', ['clip']),
-	('xsel', ['xsel', '--clipboard', '--input']),
-	('pbcopy', ['pbcopy'])
+    ('xclip', ['xclip', '-i', '-sel', 'c']),
+    ('clip', ['clip']),
+    ('xsel', ['xsel', '--clipboard', '--input']),
+    ('pbcopy', ['pbcopy'])
 ]
 
 command = ''
 for possibleCommand,arguments in possibleCommands:
-	if spawn.find_executable(possibleCommand) != None:
-		command = arguments
-		break
+    if spawn.find_executable(possibleCommand) != None:
+        command = arguments
+        break
 
 if command == '':
-	print 'Could not find a valid command in your path. Please install xclip, clip, xsel, or pbcopy'
-	sys.exit(1)
+    print('Could not find a valid command in your path. Please install xclip, clip, xsel, or pbcopy')
+    sys.exit(1)
 
 
-class MySSL_TCPServer(TCPServer):
+class MySSL_ThreadingTCPServer(ThreadingMixIn, TCPServer):
     def __init__(self,
                  server_address,
                  RequestHandlerClass,
@@ -50,6 +62,13 @@ class MySSL_TCPServer(TCPServer):
         self.keyfile = keyfile
         self.ssl_version = ssl_version
 
+        signal.signal(signal.SIGINT, self.handleClose)
+
+    def handleClose(self, signum, frame):
+        # for some reason self.shutdown() hangs?
+        self.server_close()
+        sys.exit()
+
     def get_request(self):
         newsocket, fromaddr = self.socket.accept()
         connstream = ssl.wrap_socket(newsocket,
@@ -61,18 +80,19 @@ class MySSL_TCPServer(TCPServer):
                                  ssl_version = self.ssl_version)
         return connstream, fromaddr
 
-class MySSL_ThreadingTCPServer(ThreadingMixIn, MySSL_TCPServer): pass
 
 class tcpHandler(StreamRequestHandler):
-
     def handle(self):
-        data = ''
+        data = bytes()
         blockSize = 4096
         while True:
             block = self.connection.recv(blockSize)
             data += block
             if len(block) < blockSize:
                 break
+        # TODO: would be cool if this was bi-directional
+        # and the remote could ask for the server clipboard.
+        # Then we could overwrite the put command in vim.
         self.sendToClipboard(data)
 
     def sendToClipboard(self, data):

@@ -3,7 +3,7 @@ if !has('python') && !has('python3')
 endif
 
 let s:scriptPath = expand('<sfile>:h') . '/../bin/'
-let s:clientFile = 'client.py'
+let s:clientFile = 'vim/client.py'
 
 if !exists('g:PasteSendIP')
 	let g:PasteSendIP = '127.0.0.1'
@@ -14,15 +14,15 @@ if !exists('g:PasteSendPort')
 endif
 
 if !exists('g:PasteSendCert')
-	let g:PasteSendCert = s:scriptPath . 'server.cert'
+	let g:PasteSendCert = s:scriptPath . 'client/server.cert'
 endif
 
 if !exists('g:PasteSendClientCert')
-	let g:PasteSendClientCert = s:scriptPath . 'client.cert'
+	let g:PasteSendClientCert = s:scriptPath . 'client/client.cert'
 endif
 
 if !exists('g:PasteSendClientKey')
-	let g:PasteSendClientKey = s:scriptPath . 'client.key'
+	let g:PasteSendClientKey = s:scriptPath . 'client/client.key'
 endif
 
 let s:python = ''
@@ -66,7 +66,3 @@ endif
 if !hasmapto('<Plug>PasteSendLine', 'n') || maparg('<leader>yy', 'n') ==# ''
   nmap <leader>yy <Plug>PasteSendLine
 endif
-
-"nmap y <leader>y
-"nmap yy <leader>yy
-"xmap y <leader>y
