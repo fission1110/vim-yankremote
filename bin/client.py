@@ -4,7 +4,7 @@ import os
 import socket, ssl
 import vim
 
-def PySendClipboard(line1,line2):
+def PySendClipboard():
 	# Get configuration from global vars
 	ip = vim.eval('g:PasteSendIP')
 	port = int(vim.eval('g:PasteSendPort'))
@@ -12,19 +12,7 @@ def PySendClipboard(line1,line2):
 	clientCert = vim.eval('g:PasteSendClientCert')
 	clientKey = vim.eval('g:PasteSendClientKey')
 
-	# Backup the contents of n register
-	vim.command('let n = @n')
-
-	# yank selection into n
-	vim.command('silent! normal gv"ny')
-	data = vim.eval('@n')
-
-	# restore n register
-	vim.command('let @n = n')
-
-	# Set the + register to the contents of the yanked text
-	senclose = lambda str: "'"+str.replace("'", "''")+"'"
-	vim.eval("setreg('@+', %s)" % (senclose(data)))
+	data = vim.eval('@@')
 
 	# connect using ssl to the server
 	s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)

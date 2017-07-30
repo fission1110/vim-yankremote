@@ -1,13 +1,23 @@
 #!/usr/bin/env python
 from SocketServer import TCPServer, ThreadingMixIn, StreamRequestHandler
 import subprocess
+import sys
 import ssl
 from distutils import spawn
+try:
+	import configparser
+except Exception as e:
+	import ConfigParser as configparser
 
-ip = '0.0.0.0'
-port = 9999
-cert = './server.cert'
-privKey = './server.key'
+configFile = './server.conf'
+
+config = configparser.RawConfigParser()
+config.read(configFile)
+
+ip = config.get('server', 'listen_ip')
+port = config.getint('server', 'listen_port')
+cert = config.get('server', 'server_cert')
+privKey = config.get('server', 'server_key')
 
 possibleCommands = [
 	('xclip', ['xclip', '-i', '-sel', 'c']),
@@ -16,10 +26,16 @@ possibleCommands = [
 	('pbcopy', ['pbcopy'])
 ]
 
+command = ''
 for possibleCommand,arguments in possibleCommands:
 	if spawn.find_executable(possibleCommand) != None:
 		command = arguments
 		break
+
+if command == '':
+	print 'Could not find a valid command in your path. Please install xclip, clip, xsel, or pbcopy'
+	sys.exit(1)
+
 
 class MySSL_TCPServer(TCPServer):
     def __init__(self,
