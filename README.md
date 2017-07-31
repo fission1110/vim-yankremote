@@ -1,4 +1,5 @@
 # vim YankRemote
+
 A quick and dirty vim plugin to handle secure remote copying over ssh.
 
 When I'm editing remotly, copy and paste becomes a burden. I have to disable line numbers, disable the mouse, set nowrap, then try to select the with the mouse and ctrl+shift+c.
@@ -39,7 +40,8 @@ The certificate setup can be a little daunting, but be brave, it's not as comple
 
 7. Start Yanking over tls!
 
-## alternate setup ##
+## alternate setup
+
 You could set up ssh port forwarding to push your local port 9999 to your remote server..
 Then on the remote server, you could just connect to localhost:9999 and not have
 to worry about firewalls.
@@ -67,9 +69,11 @@ let g:PasteSendClientKey = '/path/to/client.key' " The full path of the client k
 " xmap <leader>x <Plug>PasteSend
 ```
 ## Usage
+
 Press <leader>yy to send the line to the remote server.
 Press <leader>yiw to yank a word. Or any other vim idom
 <leader>y also works in visual mode.
+
 ---
 
 ## Security Considerations
